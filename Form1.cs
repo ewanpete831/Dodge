@@ -1,4 +1,4 @@
-﻿//Made by Ewan Peterson ICS3U
+﻿//Made by Ewan Peterson for ICS3U
 
 using System;
 using System.Collections.Generic;
@@ -30,6 +30,9 @@ namespace Dodge
         int newObstacleTimer = 0;
         int newCentreObstacleTimer = 0;
 
+        string gameState = "waiting";
+        string endMessage = "";
+
         bool leftDown = false;
         bool rightDown = false;
         bool upDown = false;
@@ -47,6 +50,18 @@ namespace Dodge
             InitializeComponent();
         }
 
+        public void GameInitialize()
+        {
+            titleLabel.Text = "";
+            subTitleLabel.Text = "";
+
+            player.X = 30;
+            player.Y = 185;
+
+            gameTimer.Enabled = true;
+            gameState = "running";
+        }
+
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
@@ -62,6 +77,18 @@ namespace Dodge
                     break;
                 case Keys.Down:
                     downDown = true;
+                    break;
+                case Keys.Space:
+                    if (gameState == "waiting" || gameState == "over")
+                    {
+                        GameInitialize();
+                    }
+                    break;
+                case Keys.Escape:
+                    if (gameState == "waiting" || gameState == "over") 
+                    {
+                        Application.Exit();
+                    }
                     break;
             }
         }
@@ -162,11 +189,15 @@ namespace Dodge
                 if (player.IntersectsWith(leftObstacles[i]))
                 {
                     gameTimer.Enabled = false;
+                    gameState = "over";
+                    endMessage = "You ran into an obstace!";
                 }
 
                 if(player.IntersectsWith(rightObstacles[i]))
                 {
                     gameTimer.Enabled = false;
+                    gameState = "over";
+                    endMessage = "You ran into an obstace!";
                 }
             }
 
@@ -175,30 +206,47 @@ namespace Dodge
                 if(player.IntersectsWith(centreObstacles[i]))
                 {
                     gameTimer.Enabled = false;
+                    gameState = "over";
+                    endMessage = "You ran into an obstace!";
                 }
             }
 
             //check for player reaching end
-            if (player.X > this.Width - player.Width)
+            if (player.X > this.Width - player.Width - 10)
             {
                 gameTimer.Enabled = false;
+                endMessage = "You Made it to the End!";
+                gameState = "over";
             }
                 Refresh();
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-            //draw player
-            e.Graphics.FillRectangle(playerBrush, player);
-            for(int i = 0; i < leftObstacles.Count; i++)
+            if (gameState == "waiting")
             {
-                e.Graphics.FillRectangle(obstacleBrush, leftObstacles[i]);
-                e.Graphics.FillRectangle(obstacleBrush, rightObstacles[i]);
+                titleLabel.Text = "Dodge Game";
+                subTitleLabel.Text = "Press Space Bar to Start or Escape to Exit";
             }
-            
-            for(int i = 0; i < centreObstacles.Count; i++)
+            else if (gameState == "running")
             {
-                e.Graphics.FillRectangle(obstacleBrush, centreObstacles[i]);
+                //draw player
+                e.Graphics.FillRectangle(playerBrush, player);
+                for (int i = 0; i < leftObstacles.Count; i++)
+                {
+                    e.Graphics.FillRectangle(obstacleBrush, leftObstacles[i]);
+                    e.Graphics.FillRectangle(obstacleBrush, rightObstacles[i]);
+                }
+
+                for (int i = 0; i < centreObstacles.Count; i++)
+                {
+                    e.Graphics.FillRectangle(obstacleBrush, centreObstacles[i]);
+                }
+            }
+            else if (gameState == "over")
+            {
+                titleLabel.Text = $"{endMessage}";
+                subTitleLabel.Text = "Press Space Bar to play again, or Escape to Exit";
             }
         }
     }
